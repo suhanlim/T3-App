@@ -1,7 +1,23 @@
-import Link from "next/link";
 import { db } from "~/server/db";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export const dynamic = "force-dynamic";
+
+async function Images() {
+  const images = await db.query.images.findMany({
+    orderBy: (model, { desc }) => desc(model.id),
+  });
+  return (
+    <div className="flex flex-wrap gap-4">
+      {[...images, ...images, ...images].map((image, index) => (
+        <div key={image.id + "-" + index} className="flex flex-col w-48">
+          <img src={image.url} />
+          <div>{image.name}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const mockUrls = [
   "https://utfs.io/f/6ded9778-64b5-43df-a65e-ba42330230ac-e7vdj8.jpeg",
@@ -17,22 +33,14 @@ const mockImages = mockUrls.map((url, index) => ({
 
 export default async function HomePage() {
 
-  const images = await db.query.images.findMany({
-    orderBy: (model, { desc }) => desc(model.id),
-  });
-
-  console.log(images);
-
   return (
     <main className="">
-      <div className="flex flex-wrap gap-4">
-        {[...images, ...images, ...images].map((image, index) => (
-          <div key={image.id + "-" + index} className="flex flex-col w-48">
-            <img src={image.url} />
-            <div>{image.name}</div>
-          </div>
-        ))}
-      </div>
+      <SignedOut>
+        <div className="h-full w-full text-2xl text-center">Please sign in a login</div>
+      </SignedOut>
+      <SignedIn>
+        <Images />
+      </SignedIn>
     </main>
   );
 }
